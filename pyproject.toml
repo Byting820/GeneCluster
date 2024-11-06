@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "genecluster"
+version = "0.1.1"
+description = "A gene clustering model using deep learning"
+authors = ["Byting"]
+homepage = "https://github.com/Byting820/GeneCluster" 
+repository = "https://github.com/Byting820/GeneCluster" 
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.9"
+scanpy = "1.8.2" 
+numpy = "1.19.5"  
+pandas = "1.4.4" 
+umap-learn = "0.5.3"  
+torch = "1.8.1" 
+torchvision = "0.9.1"
+faiss-gpu = "1.7.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
