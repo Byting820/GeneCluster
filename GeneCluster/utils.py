@@ -12,8 +12,12 @@ from torch.utils.data.sampler import Sampler
 
 def load_model(path):
     '''
-    load model from checkpoint path
-    path: checkpoint file path
+    load model from checkpoint path.
+
+    Parameters:
+        path: checkpoint file path.
+    Returns:
+        model (torch.nn.Module): Loaded model or None if file not found.    
     '''
     if os.path.isfile(path):
         print("=> loading checkpoint '{}'".format(path))
@@ -70,20 +74,27 @@ class ExpressionDataset(Dataset):
     
     
 class ReassignedDataset(Dataset):
+    """
+    Dataset with reassigned labels based on clustering results.
 
+    Parameters:
+        data_indexes (list): List of data indexes.
+        pseudolabels (list): List of pseudo labels.
+        dataset (np.array): Original dataset.
+    """
     def __init__(self, data_indexes, pseudolabels, dataset):
         self.datas, self.labels = self.make_dataset(data_indexes, pseudolabels, dataset)
     
     def make_dataset(self, data_indexes, pseudolabels, dataset):
-        label_to_idx = {label: idx for idx, label in enumerate(set(pseudolabels))}   # 给标签设置个索引
+        label_to_idx = {label: idx for idx, label in enumerate(set(pseudolabels))} 
         datas = np.zeros(dataset.shape, dtype='float32')
         labels = np.zeros((len(pseudolabels)), dtype='float32')
-        for j, idx in enumerate(data_indexes):   # 给索引排了个序
-            data = dataset[idx]   # 按索引给数据集重新排了个序
+        for j, idx in enumerate(data_indexes):  
+            data = dataset[idx]   
             pseudolabel = label_to_idx[pseudolabels[j]]
-            datas[idx] = data     # 按顺序给全0的datas和labels进行填充
+            datas[idx] = data    
             labels[idx] = pseudolabel
-        return datas, labels      # 返回排序后的数据和标签
+        return datas, labels     
     
     def __len__(self):
         return len(self.labels)
@@ -97,7 +108,9 @@ class ReassignedDataset(Dataset):
     
     
 def pseudolabels_assign(datas_lists, dataset):
-    """Creates a dataset from clustering, with clusters as labels.
+    """
+    Creates a dataset from clustering, with clusters as labels.
+
     Args:
         data_lists (list of list): for each cluster, the list of data indexes
                                     belonging to this cluster
@@ -116,10 +129,12 @@ def pseudolabels_assign(datas_lists, dataset):
 
 
 class UnifLabelSampler(Sampler):
-    """Samples elements uniformely accross pseudolabels.
-        Args:
-            N (int): size of returned iterator.
-            images_lists: dict of key (target), value (list of data with this target)
+    """
+    Samples elements uniformely accross pseudolabels.
+
+    Args:
+        N (int): size of returned iterator.
+        images_lists: dict of key (target), value (list of data with this target)
     """
 
     def __init__(self, N, data_lists):
@@ -163,7 +178,12 @@ class UnifLabelSampler(Sampler):
     
     
 class AverageMeter(object):
-    """Computes and stores the average and current value"""
+    """
+    Computes and stores the average and current value
+    
+    Methods:
+        update(val, n): Update average with new value `val` and count `n`.    
+    """
     def __init__(self):
         self.reset()
 

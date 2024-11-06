@@ -11,8 +11,9 @@ from torch.utils.data import Dataset
 __all__ = ['Kmeans']
 
 def preprocess_features(npdata, pca=20):
-    """ PCA降维
+    """ Applies PCA for dimensionality reduction, whitening, and L2 normalization.. 
     Preprocess an array of features.
+
     Args:
         npdata (np.array N * ndim): features to preprocess
         pca (int): dim of output
@@ -23,20 +24,21 @@ def preprocess_features(npdata, pca=20):
     npdata =  npdata.astype('float32')
 
     # Apply PCA-whitening with Faiss
-    mat = faiss.PCAMatrix(ndim, pca, eigen_power=-0.5)  #从ndim维降到pca维
-    mat.train(npdata)  #训练
+    mat = faiss.PCAMatrix(ndim, pca, eigen_power=-0.5) 
+    mat.train(npdata) 
     assert mat.is_trained
     npdata = mat.apply_py(npdata)
 
     # L2 normalization
-    row_sums = np.linalg.norm(npdata, axis=1)  #求范数
+    row_sums = np.linalg.norm(npdata, axis=1) 
     npdata = npdata / row_sums[:, np.newaxis]
 
-    return npdata   #pca维的数据
+    return npdata   
 
 
 def run_kmeans(x, nmb_clusters, verbose=False):
-    """Runs kmeans on 1 GPU.
+    """Runs kmeans on GPU.
+
     Args:
         x: data
         nmb_clusters (int): number of clusters
@@ -51,11 +53,11 @@ def run_kmeans(x, nmb_clusters, verbose=False):
     # Change faiss seed at each k-means so that the randomly picked
     # initialization centroids do not correspond to the same feature ids
     # from an epoch to another.
-    # clus.seed = np.random.randint(1234)    #返回一个不大于1234的随机整型数
+    # clus.seed = np.random.randint(1234) 
 
-    clus.niter = 20   #迭代次数
+    clus.niter = 20 
 
-    clus.max_points_per_centroid = 1000   #每个聚类中心的最大点数
+    clus.max_points_per_centroid = 1000   
      
     res = faiss.StandardGpuResources()
     flat_config = faiss.GpuIndexFlatConfig()
@@ -64,8 +66,8 @@ def run_kmeans(x, nmb_clusters, verbose=False):
     index = faiss.GpuIndexFlatL2(res, d, flat_config)
 
     # perform the training
-    clus.train(x, index)  #训练
-    _, I = index.search(x, 1)  #（距离，I:聚类标签）clus.centroids
+    clus.train(x, index) 
+    _, I = index.search(x, 1)  
     stats = clus.iteration_stats
     losses = np.array([stats.at(i).obj for i in range(stats.size())])
     if verbose:
@@ -75,6 +77,12 @@ def run_kmeans(x, nmb_clusters, verbose=False):
 
 
 class Kmeans(object):
+    """
+    K-means clustering class for applying k-means on data with preprocessing.
+
+    Attributes:
+        nmb_clusters (int): Number of clusters.
+    """
     def __init__(self, nmb_clusters):
         self.nmb_clusters = nmb_clusters
 
@@ -89,9 +97,9 @@ class Kmeans(object):
         self.xb = preprocess_features(data)
 
         # cluster the data
-        I, loss = run_kmeans(self.xb, self.nmb_clusters, verbose) #返回I：每个样本的聚类标签
+        I, loss = run_kmeans(self.xb, self.nmb_clusters, verbose) 
         self.I = I
-        #创建空嵌套列表data_lists,把同簇样本的索引分别存在一起
+        
         self.data_lists = [[] for i in range(self.nmb_clusters)]
         for i in range(len(data)):
             self.data_lists[I[i]].append(i)
@@ -103,7 +111,9 @@ class Kmeans(object):
     
     
 class Logger(object):
-    """ Class to update every epoch to keep trace of the results
+    """ 
+    Class to update every epoch to keep trace of the results.
+
     Methods:
         - log() log and save
     """
@@ -113,20 +123,32 @@ class Logger(object):
         self.data = []
 
     def log(self, train_point):
+        """
+        Logs a new training point and saves it to a file.
+
+        Args:
+            train_point (dict): Training data point to log.
+        """
         self.data.append(train_point)
         with open(os.path.join(self.path), 'wb') as fp:
-            pickle.dump(self.data, fp, -1)   #pickle.dump序列化操作，能将程序中运行的对象信息保存到文件中去，永久储存
+            pickle.dump(self.data, fp, -1)   
 
 
 def arrange_clustering(data_lists):
+    """
+    Arranges clustering results by assigning pseudolabels based on cluster indices.
+
+    Args:
+        data_lists (List[List[int]]): List of clusters, where each sublist contains indices of data points in that cluster.
+
+    Returns:
+        np.ndarray: Array of pseudolabels aligned with original data order.
+    """
     pseudolabels = []
     data_indexes = []
     for cluster, datas in enumerate(data_lists):
         data_indexes.extend(datas)
         pseudolabels.extend([cluster] * len(datas))
-    indexes = np.argsort(data_indexes)  #将元素从小到大排列，提取对应的索引
+    indexes = np.argsort(data_indexes)  
     return np.asarray(pseudolabels)[indexes]    
-    
-
-    
     

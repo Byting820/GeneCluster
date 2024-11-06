@@ -1,5 +1,6 @@
 import os
 import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import time
 import argparse
 from tkinter import Variable
@@ -38,7 +39,7 @@ def parse_args():
     parser.add_argument('--wd', default=-5, type=float,
                         help='weight decay pow (default: -5)')
     parser.add_argument('--data_path', metavar='PATH', help='path to dataset',
-                        default='/vol1/cuipeng_group/baiyuting/Benchmark/deepcluster_train/data/normalization_data/Cortex1-Smart-1000hvg.csv')
+                        default='GeneCluster/data/normal_data.csv')
 
     parser.add_argument('--batch', type=int, default=128,
                         help='batch size')
@@ -53,15 +54,12 @@ def parse_args():
     parser.add_argument('--reassign', type=float, default=1.,
                         help="""how many epochs of training between two consecutive
                         reassignments of clusters (default: 1)""")
-    parser.add_argument('--ckpt_path', type=str, default='/vol1/cuipeng_group/baiyuting/deepcluster_v2/train/cortex1_smart/epoch100', help='')
+    parser.add_argument('--ckpt_path', type=str, default='GeneCluster/train_res', help='')
     parser.add_argument('--checkpoints', type=int, default=1000,
                         help='how many iterations between two checkpoints (default: 1000)')
     parser.add_argument('--verbose', '-v', action='store_true',
                         default=True, help='verbose mode')
     
-    parser.add_argument('--refNet', metavar='PATH', help='true network',
-                        default='/vol1/cuipeng_group/baiyuting/Benchmark/deepcluster_train/data/ref_network/ref_network2.txt') 
-
     return parser.parse_args()
 
 
@@ -118,13 +116,6 @@ def Visualization(features, data_lists=None):
 
 
 class FocalLoss(nn.Module):
-    """
-    多分类focalloss,-alpha(1-yi)**gamma *ce_loss(xi,yi)
-    alpha:类别权重,用来平衡正负样本本身的比例不均; 比如alpha = [0.1, 0.45, 0.45] 0.1表示比阴性类别的权重要大
-    gamma:调节简单样本权重降低的速率,当gamma为0时,即为交叉熵损失函数,当gamma增加时,调节因子的影响也在增加.
-    class_num:类别数量；
-    size_average:损失计算方式，默认取均值
-    """
 
     def __init__(self, alpha=None, gamma=2, reduction='mean'):
         super(FocalLoss, self).__init__()
@@ -211,7 +202,7 @@ def main(args):
     cluster_log = cluster.Logger(os.path.join(args.ckpt_path,'clusters'))
 
     # last_update = 0
-    # patience = 20      # 记录需要等待的epoch数
+    # patience = 20  
     for epoch in range(args.epochs):
         end = time.time()
         
@@ -399,7 +390,6 @@ def train(dataloader, model, loss_fn, optimizer, epoch):
 if __name__ == '__main__':
     end1 = time.time()
     args = parse_args()
-    # ref = pd.read_csv(args.refNet, sep='\t', index_col=0)
     sys.stdout = open(args.ckpt_path + '/result.log', mode = 'w')
     main(args)
     print((time.time() - end1)/60)
