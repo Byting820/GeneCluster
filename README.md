@@ -5,16 +5,27 @@ GeneCluster, a deep learning based gene clustering method for single cell RNA-se
 ## Requirements
 
 python --- 3.8.10
+
 numpy --- 1.20.3
+
 numba --- 0.56.4
+
 pandas --- 2.0.3
+
 scanpy --- 1.9.3
+
 h5py ---3.8.0
+
 matplotlib ---3.7.3
+
 sklearn --- 0.0
+
 umap-learn --- 0.5.3
+
 torch --- 1.8.1
+
 torchvision --- 0.9.1
+
 faiss-gpu --- 1.7.1
 
 ## Usage
@@ -34,6 +45,7 @@ python main.py --data_path path/to/dataset.csv --epochs 100 --nmb_cluster 20 --l
 
 or
 ```sh
+cd GeneCluster/GeneCluster
 sh train.sh
 ```
 
