@@ -1,6 +1,6 @@
 # GeneCluster
 
-GeneCluster, a deep learning based gene clustering method for single cell RNA-seq data.
+GeneCluster, a deep learning method for gene clustering in single-cell RNA-seq data. The intermediate features output by the model can be used to predict co-expression relationships between genes.
 
 ## Requirements
 
@@ -48,9 +48,6 @@ or
 cd GeneCluster/GeneCluster
 sh train.sh
 ```
-
-
-Please note that the model outputs gene embeddings extracted by training (features.npy), which can be used to predict gene co-expression relationships and identify gene modules.
 
 
 ## Contact
